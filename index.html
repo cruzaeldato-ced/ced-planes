@@ -184,10 +184,38 @@
 
     function PlanCED() {
       const [selected, setSelected] = useState(3);
+      const [presupuestoAds, setPresupuestoAds] = useState(0);
+      const [copied, setCopied] = useState(false);
       const plan = plans.find(p => p.id === selected);
       const costBase = COST_BASE;
       const ahorro = ((costBase * plan.impactosMes) - plan.precioMes).toFixed(0);
       const pctAhorro = (((costBase * plan.impactosMes) - plan.precioMes) / (costBase * plan.impactosMes) * 100).toFixed(0);
+
+      const adsFee     = presupuestoAds * 0.20;
+      const adsNeta    = presupuestoAds * 0.80;
+      const adsImpactos = Math.round((adsNeta / 1.5) * 1000);
+      const totalConPauta = plan.precioMes + presupuestoAds;
+
+      const handleCopyWA = () => {
+        const lines = [
+          "📋 *COTIZACIÓN CED · PLAN NOTICIAS 2026*",
+          "",
+          `📰 *Plan: ${plan.nombre} (${plan.clave})*`,
+          `   ${plan.impactosSemana} impacto/s por semana · ${plan.impactosMes} al mes`,
+          `   💰 Inversión mensual: $${plan.precioMes} (sin IVA)`,
+          `   📌 Costo por impacto: $${(plan.precioMes / plan.impactosMes).toFixed(1)}`,
+          "",
+          presupuestoAds > 0 ? `🚀 *Amplificación Pautada (Inversión + Gestión): $${presupuestoAds}*` : null,
+          presupuestoAds > 0 ? `   Fee de gestión CED (20%): $${adsFee.toFixed(0)}` : null,
+          presupuestoAds > 0 ? `   Inversión neta en pauta (80%): $${adsNeta.toFixed(0)}` : null,
+          presupuestoAds > 0 ? `📈 Estimado de nuevos ojos en el mercado: ~${adsImpactos.toLocaleString()} vistas` : null,
+          presupuestoAds > 0 ? "" : null,
+          `🧾 *TOTAL MENSUAL (sin IVA): $${totalConPauta.toFixed(0)}*`,
+          "",
+          "_Cotización válida 7 días · Precios sin IVA · CED 2026_",
+        ].filter(l => l !== null).join("\n");
+        navigator.clipboard.writeText(lines).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+      };
 
       return (
         <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "28px 20px" }}>
@@ -314,6 +342,55 @@
           <div style={{ textAlign: "center", marginTop: 18, color: "#1f2937", fontSize: 10 }}>
             Precios estimados sin IVA · Basados en PT#3 Dato VIP de la propuesta CED 2026 · Alcance orgánico estimado sobre métricas declaradas por el medio
           </div>
+
+          {/* ── ADS BOOST + WA ── */}
+          <div style={{ maxWidth: 560, margin: "24px auto 0", display: "flex", flexDirection: "column", gap: 12 }}>
+            <div style={{ background: "#0a0a1f", border: "1px solid #818cf844", borderRadius: 14, padding: 20, position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, #818cf8, #c084fc, #818cf8)" }} />
+              <div style={{ color: "#818cf8", fontSize: 13, fontWeight: 900, marginBottom: 4 }}>🚀 Multiplicador de Friedman</div>
+              <div style={{ color: "#4b5563", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Ads Boost</div>
+              <div style={{ background: "#06060f", border: "1px solid #818cf822", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: 11, color: "#6b7280", lineHeight: 1.6, fontStyle: "italic" }}>
+                <span style={{ color: "#818cf8", fontStyle: "normal", fontWeight: 700 }}>There is no such thing as a free lunch.</span> El algoritmo exige tributo para romper la barrera orgánica.
+              </div>
+              <div style={{ marginBottom: 14 }}>
+                <div style={{ color: "#9ca3af", fontSize: 11, marginBottom: 8 }}>Presupuesto total de pauta (USD)</div>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ color: "#818cf8", fontWeight: 900, fontSize: 18, fontFamily: "monospace" }}>$</span>
+                  <input type="number" min="0" step="50" value={presupuestoAds === 0 ? "" : presupuestoAds} placeholder="0"
+                    onChange={e => setPresupuestoAds(Math.max(0, parseFloat(e.target.value) || 0))}
+                    style={{ flex: 1, background: "#0d0d1a", border: "1px solid #818cf844", borderRadius: 8, color: "#818cf8", fontFamily: "monospace", fontWeight: 900, fontSize: 18, padding: "8px 12px", outline: "none" }} />
+                </div>
+              </div>
+              {presupuestoAds > 0 && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#ef444410", border: "1px solid #ef444422", borderRadius: 8 }}>
+                    <span style={{ color: "#ef4444", fontSize: 11 }}>Fee gestión CED (20%)</span>
+                    <span style={{ color: "#ef4444", fontFamily: "monospace", fontWeight: 800 }}>−${adsFee.toFixed(0)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#10b98110", border: "1px solid #10b98122", borderRadius: 8 }}>
+                    <span style={{ color: "#10b981", fontSize: 11 }}>Inversión neta en pauta (80%)</span>
+                    <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 800 }}>${adsNeta.toFixed(0)}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#818cf810", border: "1px solid #818cf822", borderRadius: 8 }}>
+                    <span style={{ color: "#818cf8", fontSize: 11 }}>Impactos extra (CPM $1.50)</span>
+                    <span style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 800 }}>~{adsImpactos.toLocaleString()}</span>
+                  </div>
+                  <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "#818cf818", border: "1px solid #818cf844", borderRadius: 10 }}>
+                    <span style={{ color: "#e5e7eb", fontSize: 12, fontWeight: 700 }}>Total mes (plan + ads)</span>
+                    <span style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 900, fontSize: 16 }}>${totalConPauta.toFixed(0)}</span>
+                  </div>
+                </div>
+              )}
+            </div>
+            <button onClick={handleCopyWA} style={{
+              width: "100%", padding: "13px 0", borderRadius: 10, cursor: "pointer",
+              background: copied ? "#10b98120" : "#25D36620", border: `1px solid ${copied ? "#10b98166" : "#25D36655"}`,
+              color: copied ? "#10b981" : "#25D366", fontWeight: 800, fontSize: 13, letterSpacing: 0.3,
+              transition: "all 0.25s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+            }}>
+              {copied ? "✓ ¡Copiado al portapapeles!" : "📲 Copiar cotización para WhatsApp"}
+            </button>
+          </div>
         </div>
       );
     }
@@ -369,6 +446,8 @@
 
     function MatrizIndividual() {
       const [carrito, setCarrito] = useState({});
+      const [presupuestoAds, setPresupuestoAds] = useState(0);
+      const [copied, setCopied] = useState(false);
 
       const addMI  = (varId) => setCarrito(p => ({ ...p, [varId]: (p[varId] || 0) + 1 }));
       const subMI  = (varId) => setCarrito(p => {
@@ -393,14 +472,43 @@
         [carrito, allVars]
       );
 
-      const totalPiezas = rows.reduce((s, r) => s + r.qty, 0);
+      const totalPiezas   = rows.reduce((s, r) => s + r.qty, 0);
       const subtotalBruto = rows.reduce((s, r) => s + r.subtotal, 0);
-      const descPct = getMIDescuento(totalPiezas);
-      const ahorro = subtotalBruto * descPct;
-      const totalFinal = subtotalBruto - ahorro;
-      const alcanceTotal = rows.reduce((s, r) => s + r.qty * r.alcance, 0);
+      const descPct       = getMIDescuento(totalPiezas);
+      const ahorro        = subtotalBruto * descPct;
+      const totalContenido = subtotalBruto - ahorro;
+      const alcanceTotal  = rows.reduce((s, r) => s + r.qty * r.alcance, 0);
       const nextThreshold = DESCUENTOS_ESCALA.find(d => d.min > totalPiezas);
       const piezasFaltantes = nextThreshold ? nextThreshold.min - totalPiezas : 0;
+
+      const adsFee      = presupuestoAds * 0.20;
+      const adsNeta     = presupuestoAds * 0.80;
+      const adsImpactos = Math.round((adsNeta / 1.5) * 1000);
+      const totalFinal  = totalContenido + presupuestoAds;
+
+      const handleCopyWA = () => {
+        const lines = [
+          "📋 *COTIZACIÓN CED · MATRIZ INDIVIDUAL 2026*",
+          "",
+          "🛒 *Piezas seleccionadas:*",
+          ...rows.map(r => `  ${r.tipoEmoji} ${r.nombre.split("·")[0].trim()} ×${r.qty} → $${r.subtotal}`),
+          "",
+          `📦 Total piezas: ${totalPiezas}`,
+          descPct > 0 ? `🎯 Descuento por volumen (${(descPct*100).toFixed(0)}%): −$${ahorro.toFixed(0)}` : null,
+          `💰 *Subtotal contenido: $${totalContenido.toFixed(0)} (sin IVA)*`,
+          `📡 Alcance estimado: ~${alcanceTotal.toLocaleString()}`,
+          "",
+          presupuestoAds > 0 ? `🚀 *Amplificación Pautada (Inversión + Gestión): $${presupuestoAds}*` : null,
+          presupuestoAds > 0 ? `   Fee de gestión CED (20%): $${adsFee.toFixed(0)}` : null,
+          presupuestoAds > 0 ? `   Inversión neta en pauta (80%): $${adsNeta.toFixed(0)}` : null,
+          presupuestoAds > 0 ? `📈 Estimado de nuevos ojos en el mercado: ~${adsImpactos.toLocaleString()} vistas` : null,
+          presupuestoAds > 0 ? "" : null,
+          `🧾 *TOTAL MENSUAL (sin IVA): $${totalFinal.toFixed(0)}*`,
+          "",
+          "_Cotización válida 7 días · Precios sin IVA · CED 2026_",
+        ].filter(l => l !== null).join("\n");
+        navigator.clipboard.writeText(lines).then(() => { setCopied(true); setTimeout(() => setCopied(false), 2500); });
+      };
 
       return (
         <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "28px 20px" }}>
@@ -529,12 +637,12 @@
                       )}
                       <div style={{ background: "#06060f", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 700 }}>Total (sin IVA)</span>
-                        <span style={{ color: "#ef4444", fontFamily: "monospace", fontWeight: 900, fontSize: 24 }}>${totalFinal.toFixed(0)}</span>
+                        <span style={{ color: "#ef4444", fontFamily: "monospace", fontWeight: 900, fontSize: 24 }}>${totalContenido.toFixed(0)}</span>
                       </div>
                       {totalPiezas > 0 && (
                         <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
                           <span style={{ color: "#374151", fontSize: 11 }}>Costo promedio por pieza</span>
-                          <span style={{ color: "#6b7280", fontFamily: "monospace", fontSize: 11 }}>${(totalFinal / totalPiezas).toFixed(1)}</span>
+                          <span style={{ color: "#6b7280", fontFamily: "monospace", fontSize: 11 }}>${(totalContenido / totalPiezas).toFixed(1)}</span>
                         </div>
                       )}
                     </div>
@@ -562,6 +670,57 @@
                     </div>
                   ))}
                 </div>
+              )}
+
+              {/* ── ADS BOOST ── */}
+              <div style={{ background: "#0a0a1f", border: "1px solid #818cf844", borderRadius: 14, padding: 18, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, #818cf8, #c084fc, #818cf8)" }} />
+                <div style={{ color: "#818cf8", fontSize: 13, fontWeight: 900, marginBottom: 4 }}>🚀 Multiplicador de Friedman</div>
+                <div style={{ color: "#4b5563", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Ads Boost</div>
+                <div style={{ background: "#06060f", border: "1px solid #818cf822", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: 11, color: "#6b7280", lineHeight: 1.6, fontStyle: "italic" }}>
+                  <span style={{ color: "#818cf8", fontStyle: "normal", fontWeight: 700 }}>There is no such thing as a free lunch.</span> El algoritmo exige tributo para romper la barrera orgánica.
+                </div>
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ color: "#9ca3af", fontSize: 11, marginBottom: 8 }}>Presupuesto total de pauta (USD)</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#818cf8", fontWeight: 900, fontSize: 18, fontFamily: "monospace" }}>$</span>
+                    <input type="number" min="0" step="50" value={presupuestoAds === 0 ? "" : presupuestoAds} placeholder="0"
+                      onChange={e => setPresupuestoAds(Math.max(0, parseFloat(e.target.value) || 0))}
+                      style={{ flex: 1, background: "#0d0d1a", border: "1px solid #818cf844", borderRadius: 8, color: "#818cf8", fontFamily: "monospace", fontWeight: 900, fontSize: 18, padding: "8px 12px", outline: "none", width: "100%" }} />
+                  </div>
+                </div>
+                {presupuestoAds > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#ef444410", border: "1px solid #ef444422", borderRadius: 8 }}>
+                      <span style={{ color: "#ef4444", fontSize: 11 }}>Fee gestión CED (20%)</span>
+                      <span style={{ color: "#ef4444", fontFamily: "monospace", fontWeight: 800 }}>−${adsFee.toFixed(0)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#10b98110", border: "1px solid #10b98122", borderRadius: 8 }}>
+                      <span style={{ color: "#10b981", fontSize: 11 }}>Inversión neta en pauta (80%)</span>
+                      <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 800 }}>${adsNeta.toFixed(0)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#818cf810", border: "1px solid #818cf822", borderRadius: 8 }}>
+                      <span style={{ color: "#818cf8", fontSize: 11 }}>Impactos extra (CPM $1.50)</span>
+                      <span style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 800 }}>~{adsImpactos.toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "#818cf818", border: "1px solid #818cf844", borderRadius: 10 }}>
+                      <span style={{ color: "#e5e7eb", fontSize: 12, fontWeight: 700 }}>Total mes (piezas + ads)</span>
+                      <span style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 900, fontSize: 16 }}>${totalFinal.toFixed(0)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── WA BUTTON ── */}
+              {rows.length > 0 && (
+                <button onClick={handleCopyWA} style={{
+                  width: "100%", padding: "13px 0", borderRadius: 10, cursor: "pointer",
+                  background: copied ? "#10b98120" : "#25D36620", border: `1px solid ${copied ? "#10b98166" : "#25D36655"}`,
+                  color: copied ? "#10b981" : "#25D366", fontWeight: 800, fontSize: 13, letterSpacing: 0.3,
+                  transition: "all 0.25s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                }}>
+                  {copied ? "✓ ¡Copiado al portapapeles!" : "📲 Copiar cotización para WhatsApp"}
+                </button>
               )}
             </div>
           </div>
@@ -652,6 +811,8 @@
       const [activeCombo, setActiveCombo] = useState("zeus");
       const [cantidades, setCantidades] = useState({ ...PI_COMBOS[1].cantidades });
       const [expandedTipo, setExpandedTipo] = useState(null);
+      const [presupuestoAds, setPresupuestoAds] = useState(0);
+      const [copied, setCopied] = useState(false);
 
       const selectCombo = (combo) => {
         setActiveCombo(combo.id);
@@ -696,9 +857,42 @@
       const subtotalMesBruto = desglose.reduce((s, r) => s + r.subtotalMes, 0);
       const descuentoVolumen = getPIDescuentoVolumen(totalPiezasMes);
       const ahorroVolumen = subtotalMesBruto * descuentoVolumen;
-      const totalFinal = subtotalMesBruto - ahorroVolumen;
+      const totalContenido = subtotalMesBruto - ahorroVolumen;
+      const totalFinal = totalContenido + presupuestoAds;
       const totalAlcanceSemana = desglose.reduce((s, r) => s + r.cant * r.alcanceEst, 0);
       const tieneNoticias = (cantidades["noticia"] || 0) > 0;
+
+      // Ads math
+      const adsFee = presupuestoAds * 0.20;
+      const adsNeta = presupuestoAds * 0.80;
+      const adsImpactos = Math.round((adsNeta / 1.5) * 1000);
+
+      const handleCopyWA = () => {
+        const lines = [
+          "📋 *COTIZACIÓN CED · PLAN INTEGRAL 2026*",
+          "",
+          "📦 *Contenido orgánico:*",
+          ...desglose.map(r => `  ${r.emoji} ${r.nombre.split("·")[0].trim()} ×${r.cant}/sem → $${r.subtotalMes.toFixed(0)}/mes`),
+          "",
+          descuentoVolumen > 0 ? `🎯 Descuento por volumen (${(descuentoVolumen*100).toFixed(0)}%): −$${ahorroVolumen.toFixed(0)}` : null,
+          `💰 *Subtotal contenido: $${totalContenido.toFixed(0)}/mes*`,
+          "",
+          presupuestoAds > 0 ? `🚀 *Amplificación Pautada (Inversión + Gestión): $${presupuestoAds}*` : null,
+          presupuestoAds > 0 ? `   Fee de gestión CED (20%): $${adsFee.toFixed(0)}` : null,
+          presupuestoAds > 0 ? `   Inversión neta en pauta (80%): $${adsNeta.toFixed(0)}` : null,
+          presupuestoAds > 0 ? `📈 Estimado de nuevos ojos en el mercado: ~${adsImpactos.toLocaleString()} vistas` : null,
+          presupuestoAds > 0 ? "" : null,
+          `🧾 *TOTAL MENSUAL (sin IVA): $${totalFinal.toFixed(0)}*`,
+          "",
+          `📡 Alcance orgánico est./sem: ~${totalAlcanceSemana.toLocaleString()}`,
+          "",
+          "_Cotización válida 7 días · Precios sin IVA · CED 2026_",
+        ].filter(l => l !== null).join("\n");
+        navigator.clipboard.writeText(lines).then(() => {
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2500);
+        });
+      };
 
       return (
         <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "28px 20px" }}>
@@ -939,6 +1133,70 @@
                   ))}
                 </div>
               )}
+
+              {/* ── ADS BOOST CARD ── */}
+              <div style={{ background: "#0a0a1f", border: "1px solid #818cf844", borderRadius: 14, padding: 18, position: "relative", overflow: "hidden" }}>
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: "linear-gradient(90deg, #818cf8, #c084fc, #818cf8)" }} />
+                <div style={{ color: "#818cf8", fontSize: 13, fontWeight: 900, marginBottom: 4 }}>🚀 Multiplicador de Friedman</div>
+                <div style={{ color: "#4b5563", fontSize: 10, fontWeight: 700, letterSpacing: 1, textTransform: "uppercase", marginBottom: 12 }}>Ads Boost</div>
+                <div style={{ background: "#06060f", border: "1px solid #818cf822", borderRadius: 8, padding: "10px 12px", marginBottom: 14, fontSize: 11, color: "#6b7280", lineHeight: 1.6, fontStyle: "italic" }}>
+                  <span style={{ color: "#818cf8", fontStyle: "normal", fontWeight: 700 }}>There is no such thing as a free lunch.</span> El algoritmo exige tributo para romper la barrera orgánica.
+                </div>
+
+                <div style={{ marginBottom: 14 }}>
+                  <div style={{ color: "#9ca3af", fontSize: 11, marginBottom: 8 }}>Presupuesto total de pauta (USD)</div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                    <span style={{ color: "#818cf8", fontWeight: 900, fontSize: 18, fontFamily: "monospace" }}>$</span>
+                    <input
+                      type="number"
+                      min="0"
+                      step="50"
+                      value={presupuestoAds === 0 ? "" : presupuestoAds}
+                      placeholder="0"
+                      onChange={e => setPresupuestoAds(Math.max(0, parseFloat(e.target.value) || 0))}
+                      style={{ flex: 1, background: "#0d0d1a", border: "1px solid #818cf844", borderRadius: 8, color: "#818cf8", fontFamily: "monospace", fontWeight: 900, fontSize: 18, padding: "8px 12px", outline: "none", width: "100%" }}
+                    />
+                  </div>
+                </div>
+
+                {presupuestoAds > 0 && (
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#ef444410", border: "1px solid #ef444422", borderRadius: 8 }}>
+                      <span style={{ color: "#ef4444", fontSize: 11 }}>Fee gestión CED (20%)</span>
+                      <span style={{ color: "#ef4444", fontFamily: "monospace", fontWeight: 800 }}>−${adsFee.toFixed(0)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#10b98110", border: "1px solid #10b98122", borderRadius: 8 }}>
+                      <span style={{ color: "#10b981", fontSize: 11 }}>Inversión neta en pauta (80%)</span>
+                      <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 800 }}>${adsNeta.toFixed(0)}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "8px 10px", background: "#818cf810", border: "1px solid #818cf822", borderRadius: 8 }}>
+                      <span style={{ color: "#818cf8", fontSize: 11 }}>Impactos extra (CPM $1.50)</span>
+                      <span style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 800 }}>~{adsImpactos.toLocaleString()}</span>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "space-between", padding: "10px 12px", background: "#818cf818", border: "1px solid #818cf844", borderRadius: 10, marginTop: 2 }}>
+                      <span style={{ color: "#e5e7eb", fontSize: 12, fontWeight: 700 }}>Total mes (contenido + ads)</span>
+                      <span style={{ color: "#818cf8", fontFamily: "monospace", fontWeight: 900, fontSize: 16 }}>${totalFinal.toFixed(0)}</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* ── WHATSAPP COPY BUTTON ── */}
+              {desglose.length > 0 && (
+                <button
+                  onClick={handleCopyWA}
+                  style={{
+                    width: "100%", padding: "13px 0", borderRadius: 10, cursor: "pointer",
+                    background: copied ? "#10b98120" : "#25D36620",
+                    border: `1px solid ${copied ? "#10b98166" : "#25D36655"}`,
+                    color: copied ? "#10b981" : "#25D366",
+                    fontWeight: 800, fontSize: 13, letterSpacing: 0.3,
+                    transition: "all 0.25s", display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                  }}
+                >
+                  {copied ? "✓ ¡Copiado al portapapeles!" : "📲 Copiar cotización para WhatsApp"}
+                </button>
+              )}
             </div>
           </div>
 
@@ -1005,17 +1263,167 @@
 
 
     /* ══════════════════════════════════════════════════════════
+       COMPONENT 4 · OVERVIEW CED
+    ══════════════════════════════════════════════════════════ */
+
+    function OverviewCED() {
+      const metrics = [
+        { label: "Cuentas Alcanzadas", value: "291,019", sub: "Crecimiento orgánico, cero coacción", icon: "👁️", color: "#ef4444", grow: "+12.4%" },
+        { label: "Soberanía del Seguidor", value: "14,407", sub: "Pensadores Críticos", icon: "🧠", color: "#10b981", grow: "+8.1%" },
+        { label: "Interacciones (Acción Humana)", value: "26,692", sub: "Likes, shares, guardados", icon: "⚡", color: "#f59e0b", grow: "+21.3%" },
+        { label: "Visitas al Perfil", value: "6,104", sub: "Tráfico de alta intención", icon: "📡", color: "#818cf8", grow: "+5.7%" },
+      ];
+
+      const audienceBars = [
+        { label: "18–24 años", pct: 40.4, color: "#ef4444" },
+        { label: "25–34 años", pct: 35.4, color: "#f97316" },
+        { label: "35–44 años", pct: 15.1, color: "#f59e0b" },
+        { label: "45+ años",   pct:  9.1, color: "#4b5563" },
+      ];
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "40px 28px", maxWidth: 960, margin: "0 auto" }}>
+
+          {/* ── HERO HEADER ── */}
+          <div style={{ textAlign: "center", marginBottom: 56, position: "relative" }}>
+            <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 40% at 50% 0%, #ef444418 0%, transparent 70%)", pointerEvents: "none" }} />
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#ef444412", border: "1px solid #ef444430", borderRadius: 24, padding: "5px 18px", marginBottom: 20 }}>
+              <span style={{ width: 7, height: 7, borderRadius: "50%", background: "#ef4444", display: "inline-block", boxShadow: "0 0 8px #ef4444" }} />
+              <span style={{ color: "#ef4444", fontSize: 10, fontWeight: 800, letterSpacing: 3, textTransform: "uppercase" }}>Cruza El Dato · Dashboard 2026</span>
+            </div>
+            <h1 style={{ fontSize: "clamp(26px, 5vw, 44px)", fontWeight: 900, letterSpacing: -2, lineHeight: 1.05, color: "#fff", margin: "0 0 20px" }}>
+              LA MANO INVISIBLE<br />
+              <span style={{ color: "#ef4444" }}>DE LA ATENCIÓN.</span>
+            </h1>
+            <p style={{ color: "#6b7280", fontSize: "clamp(13px, 1.8vw, 15px)", lineHeight: 1.8, maxWidth: 580, margin: "0 auto", fontStyle: "italic" }}>
+              En el libre mercado de las ideas, el intercambio voluntario de atención es la base del progreso.
+              Tú buscas posicionar tu marca; nosotros, despertar conciencias críticas.{" "}
+              <span style={{ color: "#10b981", fontStyle: "normal", fontWeight: 700 }}>Operación Adam Smith: Ganamos todos.</span>
+            </p>
+            <div style={{ marginTop: 24, width: 60, height: 2, background: "linear-gradient(90deg, transparent, #ef4444, transparent)", margin: "24px auto 0" }} />
+          </div>
+
+          {/* ── METRICS LABEL ── */}
+          <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+            <span style={{ color: "#374151", fontSize: 10, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase" }}>Preferencias Reveladas</span>
+            <div style={{ flex: 1, height: 1, background: "#1a1a2e" }} />
+            <span style={{ color: "#4b5563", fontSize: 10 }}>Últimos 30 días</span>
+          </div>
+
+          {/* ── METRIC CARDS ── */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 12, marginBottom: 40 }}>
+            {metrics.map((m) => (
+              <div key={m.label} style={{ background: "#0d0d1a", border: `1px solid ${m.color}22`, borderRadius: 14, padding: "20px 18px", position: "relative", overflow: "hidden", transition: "transform 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.transform = "translateY(-2px)"}
+                onMouseLeave={e => e.currentTarget.style.transform = "translateY(0)"}
+              >
+                <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 2, background: `linear-gradient(90deg, transparent, ${m.color}, transparent)` }} />
+                <div style={{ fontSize: 22, marginBottom: 10 }}>{m.icon}</div>
+                <div style={{ color: m.color, fontSize: "clamp(24px, 4vw, 32px)", fontWeight: 900, fontFamily: "monospace", letterSpacing: -1, lineHeight: 1 }}>{m.value}</div>
+                <div style={{ color: "#6b7280", fontSize: 11, marginTop: 6, lineHeight: 1.4 }}>{m.label}</div>
+                <div style={{ color: "#374151", fontSize: 10, marginTop: 3 }}>{m.sub}</div>
+                <div style={{ position: "absolute", top: 16, right: 14, background: `${m.color}18`, border: `1px solid ${m.color}33`, borderRadius: 20, padding: "2px 8px", fontSize: 10, fontWeight: 700, color: m.color }}>{m.grow}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* ── AUDIENCE SECTION ── */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 40, alignItems: "start" }}>
+
+            {/* Bar chart */}
+            <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 14, padding: 24 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 20 }}>
+                <span style={{ fontSize: 16 }}>🗳️</span>
+                <div>
+                  <div style={{ color: "#e5e7eb", fontWeight: 800, fontSize: 14 }}>Democracia vs. Pantallocracia</div>
+                  <div style={{ color: "#4b5563", fontSize: 11 }}>Distribución de audiencia por edad</div>
+                </div>
+              </div>
+              {audienceBars.map((b) => (
+                <div key={b.label} style={{ marginBottom: 14 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                    <span style={{ color: "#9ca3af", fontSize: 12, fontWeight: 600 }}>{b.label}</span>
+                    <span style={{ color: b.color, fontFamily: "monospace", fontWeight: 800, fontSize: 13 }}>{b.pct}%</span>
+                  </div>
+                  <div style={{ background: "#06060f", borderRadius: 4, height: 8, overflow: "hidden" }}>
+                    <div style={{ width: `${b.pct}%`, background: `linear-gradient(90deg, ${b.color}66, ${b.color})`, height: "100%", borderRadius: 4, transition: "width 1s ease" }} />
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 20, padding: "12px 14px", background: "#06060f", border: "1px solid #1a1a2e", borderRadius: 8, fontSize: 12, color: "#6b7280", lineHeight: 1.7 }}>
+                Nuestra audiencia no es un espectador pasivo; es <span style={{ color: "#ef4444", fontWeight: 700 }}>protagonista del cambio</span>. El algoritmo intenta decidir qué sentimos, pero nosotros les damos los hechos.
+              </div>
+            </div>
+
+            {/* Reach funnel */}
+            <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 14, padding: 24 }}>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ color: "#e5e7eb", fontWeight: 800, fontSize: 14, marginBottom: 4 }}>Embudo de Libre Mercado</div>
+                <div style={{ color: "#4b5563", fontSize: 11 }}>Del alcance a la acción voluntaria</div>
+              </div>
+              {[
+                { label: "Alcance total", val: "291,019", pct: 100, color: "#ef4444" },
+                { label: "Interacciones", val: "26,692",  pct: 9.2,  color: "#f97316" },
+                { label: "Visitas perfil", val: "6,104",  pct: 2.1,  color: "#f59e0b" },
+                { label: "Seguidores",     val: "14,407", pct: 4.9,  color: "#10b981" },
+              ].map((row) => (
+                <div key={row.label} style={{ marginBottom: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                    <span style={{ color: "#9ca3af", fontSize: 12 }}>{row.label}</span>
+                    <div style={{ textAlign: "right" }}>
+                      <span style={{ color: row.color, fontFamily: "monospace", fontWeight: 800, fontSize: 13 }}>{row.val}</span>
+                      <span style={{ color: "#374151", fontSize: 10, marginLeft: 6 }}>{row.pct}%</span>
+                    </div>
+                  </div>
+                  <div style={{ background: "#06060f", borderRadius: 3, height: 6, overflow: "hidden" }}>
+                    <div style={{ width: `${row.pct}%`, background: `linear-gradient(90deg, ${row.color}55, ${row.color})`, height: "100%", borderRadius: 3 }} />
+                  </div>
+                </div>
+              ))}
+              <div style={{ marginTop: 20, padding: "10px 14px", background: "#10b98110", border: "1px solid #10b98130", borderRadius: 8, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span style={{ color: "#10b981", fontSize: 12, fontWeight: 700 }}>Tasa de conversión orgánica</span>
+                <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 900, fontSize: 16 }}>9.17%</span>
+              </div>
+            </div>
+          </div>
+
+          {/* ── JEFFERSON QUOTE ── */}
+          <div style={{ background: "linear-gradient(135deg, #0d0d1a 0%, #12060f 100%)", border: "1px solid #ef444422", borderRadius: 16, padding: "32px 36px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, #ef4444, transparent)" }} />
+            <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: 1, background: "linear-gradient(90deg, transparent, #ef444455, transparent)" }} />
+            <div style={{ color: "#ef444440", fontSize: 80, fontWeight: 900, lineHeight: 1, position: "absolute", top: -10, left: 28, fontFamily: "Georgia, serif" }}>"</div>
+            <div style={{ position: "relative" }}>
+              <p style={{ color: "#d1d5db", fontSize: "clamp(14px, 2vw, 17px)", fontStyle: "italic", lineHeight: 1.8, marginBottom: 16, maxWidth: 620, margin: "0 auto 20px" }}>
+                Cuando el gobierno teme al pueblo, hay libertad; cuando el pueblo teme al gobierno, hay tiranía.
+              </p>
+              <div style={{ color: "#4b5563", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 16 }}>— Thomas Jefferson</div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#ef444415", border: "1px solid #ef444435", borderRadius: 20, padding: "6px 20px" }}>
+                <span style={{ color: "#ef4444", fontSize: 12, fontWeight: 900, letterSpacing: 1.5, textTransform: "uppercase" }}>La verdad no es negociable.</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ textAlign: "center", marginTop: 28, color: "#1f2937", fontSize: 10, letterSpacing: 1 }}>
+            CRUZA EL DATO · Dashboard de Preferencias Reveladas · Últimos 30 días · Datos orgánicos declarados
+          </div>
+        </div>
+      );
+    }
+
+
+    /* ══════════════════════════════════════════════════════════
        MAIN APP · Navigation wrapper
     ══════════════════════════════════════════════════════════ */
 
     const TABS = [
-      { id: "noticias",  label: "📰 Plan Noticias",     component: PlanCED         },
-      { id: "matriz",    label: "🛒 Matriz Individual",  component: MatrizIndividual },
-      { id: "integral",  label: "⚡ Plan Integral",      component: PlanCEDIntegral  },
+      { id: "overview",  label: "🏛️ Overview",           component: OverviewCED     },
+      { id: "noticias",  label: "📰 Plan Noticias",       component: PlanCED         },
+      { id: "matriz",    label: "🛒 Matriz Individual",   component: MatrizIndividual },
+      { id: "integral",  label: "⚡ Plan Integral",       component: PlanCEDIntegral  },
     ];
 
     function App() {
-      const [activeTab, setActiveTab] = useState("noticias");
+      const [activeTab, setActiveTab] = useState("overview");
       const ActiveComponent = TABS.find(t => t.id === activeTab).component;
 
       return (
