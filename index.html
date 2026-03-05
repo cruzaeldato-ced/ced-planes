@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>CED · Planes de Contenido 2026</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #06060f; font-family: 'DM Sans', 'Segoe UI', sans-serif; }
+    input::-webkit-outer-spin-button,
+    input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    input[type=number] { -moz-appearance: textfield; }
+
+    /* ── Nav bar ── */
+    .ced-nav {
+      position: sticky; top: 0; z-index: 100;
+      background: #06060fee;
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid #1a1a2e;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 24px; height: 56px;
+    }
+    .ced-nav-logo {
+      color: #ef4444; font-weight: 900; font-size: 15px; letter-spacing: -0.5px;
+    }
+    .ced-nav-tabs { display: flex; gap: 4px; }
+    .ced-nav-tab {
+      padding: 7px 16px; border-radius: 8px; cursor: pointer;
+      font-size: 12px; font-weight: 700; letter-spacing: 0.3px;
+      border: 1px solid transparent; background: transparent;
+      color: #4b5563; transition: all 0.2s; white-space: nowrap;
+    }
+    .ced-nav-tab:hover { color: #9ca3af; background: #1a1a2e; }
+    .ced-nav-tab.active {
+      color: #fff; background: #ef444418;
+      border-color: #ef444444;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useMemo } = React;
+
+    /* ══════════════════════════════════════════════════════════
+       COMPONENT 1 · PLAN NOTICIAS (plan_ced_noticias.jsx)
+    ══════════════════════════════════════════════════════════ */
+
+    const COST_BASE = 32.5;
+
+    const plans = [
+      {
+        id: 1, nombre: "IMPACTO BÁSICO", clave: "CED-N1",
+        impactosSemana: 1, impactosMes: 4, precioMes: 120,
+        color: "#22d3ee", tag: "Entrada", descuento: null,
+        ideal: "Marca nueva en digital o test inicial",
+        entregables: [
+          "1 noticia semanal con mención en caption",
+          "1 imagen personalizada en 2do slide",
+          "Publicación en IG Feed y X",
+        ]
+      },
+      {
+        id: 2, nombre: "IMPACTO DOBLE", clave: "CED-N2",
+        impactosSemana: 2, impactosMes: 9, precioMes: 260,
+        color: "#a78bfa", tag: "Popular", descuento: "5% off",
+        ideal: "Presencia sostenida sin saturar",
+        entregables: [
+          "2 noticias semanales con mención en caption",
+          "2 imágenes personalizadas en 2do slide",
+          "Publicación en IG Feed y X",
+          "Distribución en Historias de apoyo",
+        ]
+      },
+      {
+        id: 3, nombre: "DATO VIP", clave: "CED-N3",
+        impactosSemana: 3, impactosMes: 13, precioMes: 400,
+        color: "#f43f5e", tag: "Recomendado", descuento: "Basado en PT#3",
+        ideal: "Top of mind garantizado en audiencia joven",
+        entregables: [
+          "3 noticias semanales con mención en caption",
+          "3 imágenes personalizadas en 2do slide",
+          "Publicación en IG Feed, X y TikTok",
+          "Distribución en Historias de apoyo",
+          "Mención escrita adicional en X",
+        ]
+      },
+      {
+        id: 4, nombre: "FLOW DIARIO", clave: "CED-N4",
+        impactosSemana: 5, impactosMes: 22, precioMes: 630,
+        color: "#f97316", tag: "Alto Impacto", descuento: "10% off",
+        ideal: "Dominancia de marca en el feed semanal",
+        entregables: [
+          "5 noticias semanales con mención en caption",
+          "5 imágenes personalizadas en 2do slide",
+          "Publicación en IG Feed, X y TikTok",
+          "Distribución en Historias diarias",
+          "Mención escrita adicional en X",
+          "1 Meme temático mensual de regalo",
+        ]
+      },
+      {
+        id: 5, nombre: "DOMINACIÓN TOTAL", clave: "CED-N5",
+        impactosSemana: 7, impactosMes: 30, precioMes: 800,
+        color: "#facc15", tag: "Full Presencia", descuento: "18% off",
+        ideal: "Presencia diaria, máxima recordación de marca",
+        entregables: [
+          "Noticia diaria con mención en caption",
+          "Imagen personalizada diaria en 2do slide",
+          "Publicación en IG Feed, X y TikTok",
+          "Historias diarias con tu arte",
+          "Menciones en X todos los días",
+          "2 Memes temáticos mensuales de regalo",
+          "Reporte mensual de métricas",
+        ]
+      },
+    ];
+
+    function PlanCard({ plan, selected, onClick }) {
+      const isSelected = selected === plan.id;
+      return (
+        <div onClick={onClick} style={{
+          background: isSelected ? `${plan.color}12` : "#0d0d1a",
+          border: `2px solid ${isSelected ? plan.color : "#1a1a2e"}`,
+          borderRadius: 14, padding: "20px 18px", cursor: "pointer",
+          transition: "all 0.25s ease", position: "relative", overflow: "hidden",
+        }}>
+          {plan.tag && (
+            <div style={{
+              position: "absolute", top: 12, right: 12,
+              background: isSelected ? plan.color : "#1a1a2e",
+              color: isSelected ? "#000" : plan.color,
+              fontSize: 10, fontWeight: 800, padding: "3px 9px", borderRadius: 20,
+              letterSpacing: 1, textTransform: "uppercase", border: `1px solid ${plan.color}`,
+            }}>{plan.tag}</div>
+          )}
+          <div style={{ color: plan.color, fontSize: 10, fontWeight: 700, letterSpacing: 2, marginBottom: 4 }}>{plan.clave}</div>
+          <div style={{ color: "#e5e7eb", fontWeight: 800, fontSize: 15, marginBottom: 12, letterSpacing: -0.3 }}>{plan.nombre}</div>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+            <span style={{ color: plan.color, fontSize: 28, fontWeight: 900, fontFamily: "monospace" }}>${plan.precioMes}</span>
+            <span style={{ color: "#4b5563", fontSize: 12 }}>/mes</span>
+          </div>
+          {plan.descuento && <div style={{ color: "#6b7280", fontSize: 11, marginBottom: 10 }}>{plan.descuento}</div>}
+          <div style={{ borderTop: `1px solid ${plan.color}22`, paddingTop: 10, marginTop: 8 }}>
+            <div style={{ display: "flex", justifyContent: "space-between" }}>
+              <div style={{ textAlign: "center" }}>
+                <div style={{ color: plan.color, fontSize: 20, fontWeight: 900, fontFamily: "monospace" }}>{plan.impactosSemana}</div>
+                <div style={{ color: "#4b5563", fontSize: 10 }}>por semana</div>
+              </div>
+              <div style={{ width: 1, background: "#1a1a2e" }} />
+              <div style={{ textAlign: "center" }}>
+                <div style={{ color: plan.color, fontSize: 20, fontWeight: 900, fontFamily: "monospace" }}>{plan.impactosMes}</div>
+                <div style={{ color: "#4b5563", fontSize: 10 }}>al mes</div>
+              </div>
+              <div style={{ width: 1, background: "#1a1a2e" }} />
+              <div style={{ textAlign: "center" }}>
+                <div style={{ color: plan.color, fontSize: 20, fontWeight: 900, fontFamily: "monospace" }}>${(plan.precioMes / plan.impactosMes).toFixed(1)}</div>
+                <div style={{ color: "#4b5563", fontSize: 10 }}>c/impacto</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    function CheckItem({ text, color }) {
+      return (
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginBottom: 8 }}>
+          <div style={{
+            width: 18, height: 18, borderRadius: "50%", background: `${color}22`,
+            border: `1px solid ${color}`, display: "flex", alignItems: "center",
+            justifyContent: "center", flexShrink: 0, marginTop: 1,
+          }}>
+            <span style={{ color, fontSize: 10, fontWeight: 900 }}>✓</span>
+          </div>
+          <span style={{ color: "#9ca3af", fontSize: 13, lineHeight: 1.5 }}>{text}</span>
+        </div>
+      );
+    }
+
+    function PlanCED() {
+      const [selected, setSelected] = useState(3);
+      const plan = plans.find(p => p.id === selected);
+      const costBase = COST_BASE;
+      const ahorro = ((costBase * plan.impactosMes) - plan.precioMes).toFixed(0);
+      const pctAhorro = (((costBase * plan.impactosMes) - plan.precioMes) / (costBase * plan.impactosMes) * 100).toFixed(0);
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "28px 20px" }}>
+          <div style={{ textAlign: "center", marginBottom: 32 }}>
+            <div style={{ display: "inline-block", background: "#f43f5e15", border: "1px solid #f43f5e44", borderRadius: 20, padding: "4px 16px", color: "#f43f5e", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 12 }}>
+              CRUZA EL DATO · Plan de Noticias
+            </div>
+            <h1 style={{ fontSize: 30, fontWeight: 900, margin: "0 0 8px", letterSpacing: -1, color: "#fff", lineHeight: 1.1 }}>IMPACTOS EN NOTICIAS</h1>
+            <p style={{ color: "#4b5563", fontSize: 13, margin: 0, maxWidth: 460, marginInline: "auto", lineHeight: 1.6 }}>
+              Mención de tu marca en el caption de cada noticia + imagen personalizada como 2do slide.
+              Formato: posts de coyuntura diaria en IG, X y TikTok.
+            </p>
+          </div>
+
+          <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 18, marginBottom: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <div style={{ padding: "12px 16px", background: "#f43f5e0a", border: "1px solid #f43f5e22", borderRadius: 8 }}>
+              <div style={{ color: "#f43f5e", fontWeight: 700, fontSize: 12, marginBottom: 6, letterSpacing: 0.5 }}>📝 SLIDE 1 · La Noticia</div>
+              <div style={{ color: "#6b7280", fontSize: 12, lineHeight: 1.6 }}>
+                Contenido editorial de CED: noticia, dato verificado o hecho de coyuntura. Tu marca aparece integrada al final del <strong style={{ color: "#9ca3af" }}>caption</strong> con un mensaje o CTA definido contigo.
+              </div>
+            </div>
+            <div style={{ padding: "12px 16px", background: "#f43f5e0a", border: "1px solid #f43f5e22", borderRadius: 8 }}>
+              <div style={{ color: "#f43f5e", fontWeight: 700, fontSize: 12, marginBottom: 6, letterSpacing: 0.5 }}>🎨 SLIDE 2 · Tu Arte</div>
+              <div style={{ color: "#6b7280", fontSize: 12, lineHeight: 1.6 }}>
+                Segunda lámina del carrusel con <strong style={{ color: "#9ca3af" }}>arte 100% personalizado</strong> de tu marca: promo, producto, oferta o branding. Producción incluida por CED o arte enviado por la marca.
+              </div>
+            </div>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 10, marginBottom: 24 }}>
+            {plans.map(p => <PlanCard key={p.id} plan={p} selected={selected} onClick={() => setSelected(p.id)} />)}
+          </div>
+
+          <div style={{ background: "#0d0d1a", border: `2px solid ${plan.color}44`, borderRadius: 14, padding: 24, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, marginBottom: 20 }}>
+            <div>
+              <div style={{ color: plan.color, fontWeight: 900, fontSize: 18, marginBottom: 4 }}>{plan.nombre}</div>
+              <div style={{ color: "#4b5563", fontSize: 12, marginBottom: 16 }}>{plan.ideal}</div>
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ color: "#6b7280", fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Entregables incluidos</div>
+                {plan.entregables.map((e, i) => <CheckItem key={i} text={e} color={plan.color} />)}
+              </div>
+              <div style={{ padding: "12px 16px", background: `${plan.color}0a`, border: `1px solid ${plan.color}33`, borderRadius: 8, fontSize: 12, color: "#9ca3af", lineHeight: 1.6 }}>
+                <strong style={{ color: plan.color }}>Plataformas activas:</strong> Instagram Feed, X (Twitter)
+                {plan.id >= 3 ? ", TikTok" : ""}
+                {plan.id >= 4 ? ", Historias diarias" : ""}
+                {plan.id >= 2 ? ", Historias de apoyo" : ""}
+              </div>
+            </div>
+            <div>
+              <div style={{ color: "#6b7280", fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Métricas del plan</div>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 16 }}>
+                {[
+                  ["Inversión mensual", `$${plan.precioMes}`, "sin IVA"],
+                  ["Impactos / mes", `${plan.impactosMes}`, "publicaciones"],
+                  ["Costo por impacto", `$${(plan.precioMes / plan.impactosMes).toFixed(1)}`, "por noticia"],
+                  ["Frecuencia", `${plan.impactosSemana}x`, "por semana"],
+                ].map(([l, v, s]) => (
+                  <div key={l} style={{ background: "#06060f", border: "1px solid #1a1a2e", borderRadius: 8, padding: "12px 14px" }}>
+                    <div style={{ color: "#4b5563", fontSize: 10, textTransform: "uppercase", letterSpacing: 0.5, marginBottom: 4 }}>{l}</div>
+                    <div style={{ color: plan.color, fontSize: 22, fontWeight: 900, fontFamily: "monospace" }}>{v}</div>
+                    <div style={{ color: "#374151", fontSize: 10 }}>{s}</div>
+                  </div>
+                ))}
+              </div>
+              <div style={{ background: "#06060f", border: `1px solid ${plan.color}33`, borderRadius: 8, padding: "14px 16px", marginBottom: 12 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={{ color: "#6b7280", fontSize: 11 }}>Precio de referencia sin descuento</div>
+                  <div style={{ color: "#4b5563", fontWeight: 700, fontFamily: "monospace", textDecoration: "line-through" }}>${(costBase * plan.impactosMes).toFixed(0)}</div>
+                </div>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                  <div style={{ color: "#9ca3af", fontSize: 12 }}>Precio de este plan</div>
+                  <div style={{ color: plan.color, fontWeight: 900, fontFamily: "monospace", fontSize: 18 }}>${plan.precioMes}</div>
+                </div>
+                <div style={{ borderTop: "1px solid #1a1a2e", paddingTop: 8 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between" }}>
+                    <div style={{ color: "#10b981", fontSize: 12, fontWeight: 700 }}>Ahorro estimado</div>
+                    <div style={{ color: "#10b981", fontWeight: 900, fontFamily: "monospace" }}>${ahorro > 0 ? ahorro : 0} ({pctAhorro > 0 ? pctAhorro : 0}%)</div>
+                  </div>
+                </div>
+              </div>
+              <div>
+                <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#4b5563", marginBottom: 5 }}>
+                  <span>Volumen de impactos (vs. Plan 5)</span><span>{plan.impactosMes}/30</span>
+                </div>
+                <div style={{ background: "#1a1a2e", borderRadius: 4, height: 6 }}>
+                  <div style={{ width: `${(plan.impactosMes / 30) * 100}%`, background: `linear-gradient(90deg, ${plan.color}88, ${plan.color})`, height: "100%", borderRadius: 4, transition: "width 0.5s ease" }} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 20 }}>
+            <div style={{ color: "#4b5563", fontSize: 11, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Resumen comparativo de planes</div>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+              <thead>
+                <tr style={{ borderBottom: "1px solid #1a1a2e" }}>
+                  {["Plan", "Impactos/sem", "Impactos/mes", "Precio/mes", "Costo/impacto", "Ahorro vs. base"].map(h => (
+                    <th key={h} style={{ textAlign: h === "Plan" ? "left" : "center", padding: "8px 10px", color: "#4b5563", fontWeight: 600, fontSize: 10, textTransform: "uppercase" }}>{h}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {plans.map(p => {
+                  const basePrice = costBase * p.impactosMes;
+                  const saving = basePrice - p.precioMes;
+                  const pct = ((saving / basePrice) * 100).toFixed(0);
+                  const isActive = selected === p.id;
+                  return (
+                    <tr key={p.id} onClick={() => setSelected(p.id)} style={{ borderBottom: "1px solid #06060f", background: isActive ? `${p.color}0a` : "transparent", cursor: "pointer", transition: "background 0.2s" }}>
+                      <td style={{ padding: "10px 10px", color: isActive ? p.color : "#9ca3af", fontWeight: 700 }}>
+                        {p.nombre}<div style={{ color: "#4b5563", fontWeight: 400, fontSize: 10 }}>{p.clave}</div>
+                      </td>
+                      <td style={{ textAlign: "center", color: isActive ? p.color : "#6b7280", fontFamily: "monospace", fontWeight: 700 }}>{p.impactosSemana}</td>
+                      <td style={{ textAlign: "center", color: isActive ? p.color : "#6b7280", fontFamily: "monospace", fontWeight: 700 }}>{p.impactosMes}</td>
+                      <td style={{ textAlign: "center", color: isActive ? p.color : "#e5e7eb", fontFamily: "monospace", fontWeight: 800, fontSize: 14 }}>${p.precioMes}</td>
+                      <td style={{ textAlign: "center", color: "#6b7280", fontFamily: "monospace" }}>${(p.precioMes / p.impactosMes).toFixed(1)}</td>
+                      <td style={{ textAlign: "center", color: saving > 0 ? "#10b981" : "#4b5563", fontWeight: 700 }}>{saving > 0 ? `$${saving.toFixed(0)} (${pct}%)` : "—"}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 18, color: "#1f2937", fontSize: 10 }}>
+            Precios estimados sin IVA · Basados en PT#3 Dato VIP de la propuesta CED 2026 · Alcance orgánico estimado sobre métricas declaradas por el medio
+          </div>
+        </div>
+      );
+    }
+
+
+    /* ══════════════════════════════════════════════════════════
+       COMPONENT 2 · MATRIZ INDIVIDUAL (matriz_individual_ced.jsx)
+    ══════════════════════════════════════════════════════════ */
+
+    const CATALOGO = [
+      { id: "noticia", tipo: "Noticia", emoji: "📰", color: "#f43f5e", variantes: [{ id: "noticia_std", nombre: "Noticia con mención", desc: "Mención de marca en caption + imagen personalizada como 2do slide", precio: 30, badge: "Caption + Slide 2", badgeColor: "#f43f5e", alcance: 3500, plataformas: ["IG Feed", "X", "TikTok"] }] },
+      { id: "carrusel", tipo: "Carrusel", emoji: "🗂️", color: "#3b82f6", variantes: [
+        { id: "carrusel_e1", nombre: "Estilo 1 · Dato al Toque", desc: "Flash de impacto. Gancho heavy, contexto rápido, cierre explosivo. Lenguaje sin anestesia, tipografía grande.", precio: 200, badge: "Flash", badgeColor: "#38bdf8", alcance: 6500, plataformas: ["IG Feed", "TikTok", "X"] },
+        { id: "carrusel_e2", nombre: "Estilo 2 · La Vuelta Completa", desc: "Análisis profundo. Desarma la noticia, perfil de jugadores, desglose, diccionario CED. Contenido que se guarda.", precio: 400, badge: "Deep Dive", badgeColor: "#818cf8", alcance: 8000, plataformas: ["IG Feed", "TikTok", "Historias", "X"] },
+      ]},
+      { id: "meme", tipo: "Meme", emoji: "😂", color: "#f59e0b", variantes: [
+        { id: "meme_mencion", nombre: "Mención en Meme", desc: "Meme viral intacto. Tu marca en el caption con CTA. Máximo rebote orgánico, mínima fricción.", precio: 200, badge: "Estándar", badgeColor: "#fbbf24", alcance: 5000, plataformas: ["IG", "X", "TikTok", "WhatsApp"] },
+        { id: "meme_emp", nombre: "Meme Personalizado Emprendimiento", desc: "Meme creado a medida sobre el universo del emprendimiento. Identidad de marca integrada.", precio: 300, badge: "Premium", badgeColor: "#f97316", alcance: 6000, plataformas: ["IG", "X", "TikTok", "WhatsApp"] },
+      ]},
+      { id: "video", tipo: "Video / Reel", emoji: "🎥", color: "#8b5cf6", variantes: [
+        { id: "video_simple", nombre: "Video Simple / Explicativo", desc: "Video de tema con integración de marca. Al Vuelo, análisis o reacción. 30–60 segundos.", precio: 200, badge: "Estándar", badgeColor: "#a78bfa", alcance: 8000, plataformas: ["IG Reels", "TikTok", "YouTube Shorts"] },
+        { id: "video_custom", nombre: "Video Personalizado", desc: "Producción creativa a medida. Precio base $300; el precio final depende del requerimiento.", precio: 300, badge: "Creativo", badgeColor: "#c084fc", precioVariable: true, alcance: 10000, plataformas: ["IG Reels", "TikTok", "YouTube Shorts", "Historias"] },
+      ]},
+      { id: "historia", tipo: "Historias", emoji: "⚡", color: "#10b981", variantes: [{ id: "historia_std", nombre: "Historia con marca", desc: "Secuencia de 3–5 slides con stickers interactivos y arte de marca.", precio: 20, badge: "Stories", badgeColor: "#10b981", alcance: 1800, plataformas: ["IG Historias", "TikTok"] }] },
+    ];
+
+    function getMIDescuento(total) {
+      if (total >= 30) return 0.20;
+      if (total >= 20) return 0.15;
+      if (total >= 12) return 0.10;
+      if (total >= 7)  return 0.05;
+      return 0;
+    }
+
+    const DESCUENTOS_ESCALA = [
+      { min: 7,  label: "7+ piezas",  pct: "5%",  color: "#6b7280" },
+      { min: 12, label: "12+ piezas", pct: "10%", color: "#9ca3af" },
+      { min: 20, label: "20+ piezas", pct: "15%", color: "#d1d5db" },
+      { min: 30, label: "30+ piezas", pct: "20%", color: "#10b981" },
+    ];
+
+    function TagMI({ label, color }) {
+      return <span style={{ background: `${color}20`, color, border: `1px solid ${color}40`, borderRadius: 4, padding: "1px 7px", fontSize: 10, fontWeight: 700, marginRight: 4, marginBottom: 2, display: "inline-block", whiteSpace: "nowrap" }}>{label}</span>;
+    }
+
+    function BarMI({ pct, color }) {
+      return (
+        <div style={{ background: "#1a1a2e", borderRadius: 3, height: 4, overflow: "hidden", marginTop: 4 }}>
+          <div style={{ width: `${Math.min(pct, 100)}%`, background: `linear-gradient(90deg, ${color}60, ${color})`, height: "100%", borderRadius: 3, transition: "width 0.5s ease" }} />
+        </div>
+      );
+    }
+
+    function MatrizIndividual() {
+      const [carrito, setCarrito] = useState({});
+
+      const addMI  = (varId) => setCarrito(p => ({ ...p, [varId]: (p[varId] || 0) + 1 }));
+      const subMI  = (varId) => setCarrito(p => {
+        const n = (p[varId] || 0) - 1;
+        if (n <= 0) { const c = { ...p }; delete c[varId]; return c; }
+        return { ...p, [varId]: n };
+      });
+      const setMI  = (varId, val) => {
+        const n = parseInt(val) || 0;
+        if (n <= 0) { setCarrito(p => { const c = { ...p }; delete c[varId]; return c; }); }
+        else setCarrito(p => ({ ...p, [varId]: n }));
+      };
+
+      const allVars = useMemo(() => CATALOGO.flatMap(t => t.variantes.map(v => ({ ...v, tipoColor: t.color, tipoEmoji: t.emoji, tipoNombre: t.tipo }))), []);
+
+      const rows = useMemo(() =>
+        Object.entries(carrito).filter(([, q]) => q > 0).map(([varId, qty]) => {
+          const v = allVars.find(x => x.id === varId);
+          if (!v) return null;
+          return { ...v, qty, subtotal: v.precio * qty };
+        }).filter(Boolean),
+        [carrito, allVars]
+      );
+
+      const totalPiezas = rows.reduce((s, r) => s + r.qty, 0);
+      const subtotalBruto = rows.reduce((s, r) => s + r.subtotal, 0);
+      const descPct = getMIDescuento(totalPiezas);
+      const ahorro = subtotalBruto * descPct;
+      const totalFinal = subtotalBruto - ahorro;
+      const alcanceTotal = rows.reduce((s, r) => s + r.qty * r.alcance, 0);
+      const nextThreshold = DESCUENTOS_ESCALA.find(d => d.min > totalPiezas);
+      const piezasFaltantes = nextThreshold ? nextThreshold.min - totalPiezas : 0;
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "28px 20px" }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#ef444415", border: "1px solid #ef444440", borderRadius: 20, padding: "4px 14px", color: "#ef4444", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
+              CRUZA EL DATO · Matriz de Piezas
+            </div>
+            <h1 style={{ fontSize: 26, fontWeight: 900, margin: "0 0 6px", letterSpacing: -1, color: "#fff" }}>AGREGA PIEZAS INDIVIDUALES</h1>
+            <p style={{ color: "#4b5563", fontSize: 12, margin: 0 }}>Suma piezas una a una. El descuento se aplica automáticamente según el total acumulado.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 320px", gap: 16, alignItems: "start" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+              {CATALOGO.map(tipo => (
+                <div key={tipo.id}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, paddingLeft: 4 }}>
+                    <span style={{ fontSize: 16 }}>{tipo.emoji}</span>
+                    <span style={{ color: tipo.color, fontWeight: 800, fontSize: 13, letterSpacing: 0.5 }}>{tipo.tipo.toUpperCase()}</span>
+                    <div style={{ flex: 1, height: 1, background: `${tipo.color}22` }} />
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+                    {tipo.variantes.map(v => {
+                      const qty = carrito[v.id] || 0;
+                      const isActive = qty > 0;
+                      return (
+                        <div key={v.id} style={{ background: isActive ? `${v.badgeColor}0d` : "#0d0d1a", border: `1px solid ${isActive ? v.badgeColor + "50" : "#1a1a2e"}`, borderRadius: 10, padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr auto", gap: 12, alignItems: "center", transition: "all 0.25s" }}>
+                          <div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 5, flexWrap: "wrap" }}>
+                              <span style={{ color: isActive ? v.badgeColor : "#9ca3af", fontWeight: 800, fontSize: 13 }}>{v.nombre}</span>
+                              <TagMI label={v.badge} color={v.badgeColor} />
+                              {v.precioVariable && <TagMI label="Precio base" color="#6b7280" />}
+                            </div>
+                            <div style={{ color: "#4b5563", fontSize: 11, lineHeight: 1.5, marginBottom: 6 }}>{v.desc}</div>
+                            <div style={{ display: "flex", flexWrap: "wrap" }}>
+                              {v.plataformas.map(p => <TagMI key={p} label={p} color={isActive ? v.badgeColor : "#374151"} />)}
+                            </div>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8, minWidth: 120 }}>
+                            <div style={{ textAlign: "right" }}>
+                              <div style={{ color: isActive ? v.badgeColor : "#6b7280", fontFamily: "monospace", fontWeight: 900, fontSize: 18 }}>${v.precio}{v.precioVariable ? "+" : ""}</div>
+                              <div style={{ color: "#374151", fontSize: 10 }}>por pieza</div>
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                              <button onClick={() => subMI(v.id)} style={{ width: 30, height: 30, borderRadius: "50%", border: `1px solid ${v.badgeColor}44`, background: "transparent", color: v.badgeColor, fontSize: 18, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: qty === 0 ? 0.25 : 1 }}>−</button>
+                              <input type="number" min="0" value={qty === 0 ? "" : qty} placeholder="0" onChange={e => setMI(v.id, e.target.value)} style={{ width: 44, height: 30, textAlign: "center", background: "#06060f", border: `1px solid ${isActive ? v.badgeColor + "55" : "#1a1a2e"}`, borderRadius: 6, color: isActive ? v.badgeColor : "#6b7280", fontFamily: "monospace", fontWeight: 900, fontSize: 15, outline: "none" }} />
+                              <button onClick={() => addMI(v.id)} style={{ width: 30, height: 30, borderRadius: "50%", border: `1px solid ${v.badgeColor}44`, background: `${v.badgeColor}22`, color: v.badgeColor, fontSize: 18, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>+</button>
+                            </div>
+                            {isActive && (
+                              <div style={{ background: `${v.badgeColor}18`, border: `1px solid ${v.badgeColor}33`, borderRadius: 6, padding: "5px 10px", textAlign: "center" }}>
+                                <div style={{ color: v.badgeColor, fontFamily: "monospace", fontWeight: 900, fontSize: 13 }}>${(qty * v.precio).toFixed(0)}</div>
+                                <div style={{ color: "#374151", fontSize: 9 }}>subtotal</div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ position: "sticky", top: 76, display: "flex", flexDirection: "column", gap: 12 }}>
+              <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 16 }}>
+                <div style={{ color: "#374151", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, marginBottom: 12 }}>Escala de descuentos</div>
+                {DESCUENTOS_ESCALA.map(d => {
+                  const alcanzado = totalPiezas >= d.min;
+                  return (
+                    <div key={d.min} style={{ marginBottom: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                        <span style={{ color: alcanzado ? "#e5e7eb" : "#374151", fontSize: 11, fontWeight: alcanzado ? 700 : 400 }}>{alcanzado ? "✓ " : ""}{d.label}</span>
+                        <span style={{ color: alcanzado ? "#10b981" : "#374151", fontFamily: "monospace", fontWeight: 800, fontSize: 12 }}>{d.pct}</span>
+                      </div>
+                      <BarMI pct={(Math.min(totalPiezas, d.min) / d.min) * 100} color={alcanzado ? "#10b981" : "#374151"} />
+                    </div>
+                  );
+                })}
+                {nextThreshold && totalPiezas > 0 && (
+                  <div style={{ marginTop: 10, padding: "8px 10px", background: "#10b98110", border: "1px solid #10b98130", borderRadius: 6, fontSize: 11, color: "#10b981" }}>
+                    Agrega <strong>{piezasFaltantes} pieza{piezasFaltantes > 1 ? "s" : ""} más</strong> para {nextThreshold.pct} de descuento
+                  </div>
+                )}
+                {totalPiezas === 0 && <div style={{ fontSize: 11, color: "#374151", textAlign: "center", paddingTop: 4 }}>Agrega piezas para activar descuentos</div>}
+              </div>
+
+              <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 16 }}>
+                <div style={{ color: "#374151", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Resumen del pedido</div>
+                {rows.length === 0 ? (
+                  <div style={{ color: "#1f2937", fontSize: 13, textAlign: "center", padding: "20px 0" }}>Sin piezas seleccionadas</div>
+                ) : (
+                  <>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 14 }}>
+                      {rows.map(r => (
+                        <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                          <div style={{ flex: 1, paddingRight: 8 }}>
+                            <div style={{ color: r.badgeColor, fontSize: 12, fontWeight: 700 }}>{r.tipoEmoji} {r.nombre.split("·")[0].trim()}</div>
+                            <div style={{ color: "#374151", fontSize: 10 }}>{r.qty} × ${r.precio} = ${r.subtotal}</div>
+                          </div>
+                          <div style={{ background: `${r.badgeColor}15`, borderRadius: 6, padding: "4px 8px", textAlign: "right", flexShrink: 0 }}>
+                            <div style={{ color: r.badgeColor, fontFamily: "monospace", fontWeight: 900, fontSize: 13 }}>×{r.qty}</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ borderTop: "1px solid #1a1a2e", paddingTop: 12 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ color: "#6b7280", fontSize: 12 }}>Total piezas</span>
+                        <span style={{ color: "#e5e7eb", fontFamily: "monospace", fontWeight: 800 }}>{totalPiezas}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ color: "#6b7280", fontSize: 12 }}>Alcance estimado</span>
+                        <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 700 }}>~{alcanceTotal.toLocaleString()}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 10 }}>
+                        <span style={{ color: "#6b7280", fontSize: 12 }}>Subtotal</span>
+                        <span style={{ color: descPct > 0 ? "#4b5563" : "#e5e7eb", fontFamily: "monospace", fontWeight: 700, textDecoration: descPct > 0 ? "line-through" : "none" }}>${subtotalBruto.toFixed(0)}</span>
+                      </div>
+                      {descPct > 0 && (
+                        <div style={{ background: "#10b98112", border: "1px solid #10b98133", borderRadius: 8, padding: "10px 12px", marginBottom: 12 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between" }}>
+                            <span style={{ color: "#10b981", fontSize: 12, fontWeight: 700 }}>Descuento {(descPct * 100).toFixed(0)}%</span>
+                            <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 800 }}>−${ahorro.toFixed(0)}</span>
+                          </div>
+                        </div>
+                      )}
+                      <div style={{ background: "#06060f", borderRadius: 10, padding: "12px 14px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 700 }}>Total (sin IVA)</span>
+                        <span style={{ color: "#ef4444", fontFamily: "monospace", fontWeight: 900, fontSize: 24 }}>${totalFinal.toFixed(0)}</span>
+                      </div>
+                      {totalPiezas > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: 8 }}>
+                          <span style={{ color: "#374151", fontSize: 11 }}>Costo promedio por pieza</span>
+                          <span style={{ color: "#6b7280", fontFamily: "monospace", fontSize: 11 }}>${(totalFinal / totalPiezas).toFixed(1)}</span>
+                        </div>
+                      )}
+                    </div>
+                    <button onClick={() => setCarrito({})} style={{ marginTop: 14, width: "100%", padding: "8px 0", background: "transparent", border: "1px solid #1a1a2e", borderRadius: 8, color: "#374151", fontSize: 12, cursor: "pointer" }}>
+                      Limpiar selección
+                    </button>
+                  </>
+                )}
+              </div>
+
+              {rows.length > 0 && (
+                <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 14 }}>
+                  <div style={{ color: "#374151", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Desglose por tipo</div>
+                  {Object.entries(rows.reduce((acc, r) => {
+                    const k = r.tipoNombre;
+                    acc[k] = acc[k] || { qty: 0, subtotal: 0, color: r.tipoColor, emoji: r.tipoEmoji };
+                    acc[k].qty += r.qty; acc[k].subtotal += r.subtotal; return acc;
+                  }, {})).map(([tipo, data]) => (
+                    <div key={tipo} style={{ marginBottom: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                        <span style={{ color: "#9ca3af", fontSize: 11 }}>{data.emoji} {tipo} ×{data.qty}</span>
+                        <span style={{ color: data.color, fontFamily: "monospace", fontWeight: 700, fontSize: 11 }}>${data.subtotal}</span>
+                      </div>
+                      <BarMI pct={(data.subtotal / subtotalBruto) * 100} color={data.color} />
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+          <div style={{ textAlign: "center", marginTop: 24, color: "#1f2937", fontSize: 10 }}>
+            Precios sin IVA · Descuentos por volumen acumulado total · Alcance estimado sobre métricas orgánicas declaradas por CED
+          </div>
+        </div>
+      );
+    }
+
+
+    /* ══════════════════════════════════════════════════════════
+       COMPONENT 3 · PLAN INTEGRAL (plan_ced_v2.jsx)
+    ══════════════════════════════════════════════════════════ */
+
+    function getPIDescuentoVolumen(totalPiezasMes) {
+      if (totalPiezasMes >= 30) return 0.20;
+      if (totalPiezasMes >= 20) return 0.15;
+      if (totalPiezasMes >= 12) return 0.10;
+      if (totalPiezasMes >= 7)  return 0.05;
+      return 0;
+    }
+
+    function getPIDescuentoNoticias(cantSemana) {
+      if (cantSemana >= 7) return 0.20;
+      if (cantSemana >= 5) return 0.15;
+      if (cantSemana >= 3) return 0.10;
+      if (cantSemana >= 2) return 0.05;
+      return 0;
+    }
+
+    const PI_TIPOS = [
+      { id: "noticia", nombre: "Noticia", emoji: "📰", descripcion: "Post de coyuntura diaria. Mención de tu marca en el caption + imagen personalizada como 2do slide.", precioBase: 30, tieneDescuentoPropio: true, plataformas: ["IG Feed", "X", "TikTok"], color: "#f43f5e", maxSemana: 7, alcanceEst: 3500, variantes: null },
+      { id: "carrusel", nombre: "Carrusel", emoji: "🗂️", descripcion: "Dos estilos editoriales: flash de impacto o análisis profundo con tu marca integrada.", precioBase: null, tieneDescuentoPropio: false, plataformas: ["IG Feed", "TikTok", "Historias", "X"], color: "#3b82f6", maxSemana: 3, alcanceEst: 6500, variantes: [
+        { id: "carrusel_e1", nombre: "Estilo 1 · Dato al Toque", precio: 200, badge: "Flash", color: "#38bdf8", desc: "Golpe de realidad. Gancho heavy, contexto rápido, impacto directo y cierre explosivo.", estructura: ["Portada: pregunta o afirmación heavy", "Contexto rápido del cambio", "Impacto directo en cristiano", "Cierre explosivo con pregunta picante"] },
+        { id: "carrusel_e2", nombre: "Estilo 2 · La Vuelta Completa", precio: 400, badge: "Deep Dive", color: "#818cf8", desc: "Análisis estratégico. Desarma la noticia para mostrar el bisne detrás.", estructura: ["Gancho del Deal (portada)", "La Movida + jugadores", "Desglose: cede / gana / premio", "Diccionario CED + Cierre de opinión"] },
+      ]},
+      { id: "meme", nombre: "Meme", emoji: "😂", descripcion: "Dos niveles: mención estándar con rebote viral o meme personalizado sobre emprendimiento.", precioBase: null, tieneDescuentoPropio: false, plataformas: ["IG", "X", "TikTok", "WhatsApp"], color: "#f59e0b", maxSemana: 3, alcanceEst: 5000, variantes: [
+        { id: "meme_mencion", nombre: "Mención en Meme", precio: 200, badge: "Estándar", color: "#fbbf24", desc: "El meme se mantiene intacto. La pauta va en el caption con mención directa a tu marca.", estructura: ["Meme viral de alto share", "Caption: mención directa de marca + CTA", "Distribución en IG, X, TikTok y WhatsApp"] },
+        { id: "meme_personalizado", nombre: "Meme Personalizado Emprendimiento", precio: 300, badge: "Premium", color: "#f97316", desc: "Meme creado 100% a medida sobre el universo del emprendimiento y tu marca.", estructura: ["Concepto creativo personalizado", "Tema: emprendimiento, negocio, startup", "Identidad de marca integrada al meme", "Distribución completa multiplataforma"] },
+      ]},
+      { id: "video", nombre: "Video / Reel", emoji: "🎥", descripcion: "Videos explicativos simples o producciones personalizadas con creatividad.", precioBase: null, tieneDescuentoPropio: false, plataformas: ["IG Reels", "TikTok", "YouTube Shorts", "Historias"], color: "#8b5cf6", maxSemana: 2, alcanceEst: 8000, variantes: [
+        { id: "video_simple", nombre: "Video Simple / Explicativo", precio: 200, badge: "Estándar", color: "#a78bfa", desc: "Video explicando un tema con integración de tu marca. Al Vuelo, análisis o reacción.", estructura: ["Tema de coyuntura + integración de marca", "30–60 segundos", "Distribución en Reels, TikTok y Shorts"] },
+        { id: "video_personalizado", nombre: "Video Personalizado", precio: 300, badge: "Creativo", color: "#c084fc", desc: "Producción personalizada con creatividad. Precio base desde $300.", estructura: ["Concepto creativo a medida", "Producción elaborada con tu marca", "Precio final según brief del cliente"], precioVariable: true },
+      ]},
+      { id: "historia", nombre: "Historias", emoji: "⚡", descripcion: "Secuencias de Historias con alto engagement. Stickers de interacción, arte de marca.", precioBase: 20, tieneDescuentoPropio: false, plataformas: ["IG Historias", "TikTok"], color: "#10b981", maxSemana: 7, alcanceEst: 1800, variantes: null },
+    ];
+
+    const PI_COMBOS = [
+      { id: "flow", nombre: "Flow Inicial", clave: "CD#6", descripcion: "Entrada estratégica. Alta recurrencia + toque visual.", color: "#06b6d4", cantidades: { noticia: 2, carrusel_e1: 1, carrusel_e2: 0, meme_mencion: 1, meme_personalizado: 0, video_simple: 0, video_personalizado: 0, historia: 0 } },
+      { id: "zeus", nombre: "Zeus", clave: "CD#ZS", descripcion: "Saturación multiplataforma. Máximo enganche semanal.", color: "#f97316", cantidades: { noticia: 3, carrusel_e1: 1, carrusel_e2: 1, meme_mencion: 1, meme_personalizado: 0, video_simple: 1, video_personalizado: 0, historia: 2 } },
+      { id: "custom", nombre: "A la Carta", clave: "CD#CUSTOM", descripcion: "Arma tu propio plan a medida.", color: "#a78bfa", cantidades: { noticia: 0, carrusel_e1: 0, carrusel_e2: 0, meme_mencion: 0, meme_personalizado: 0, video_simple: 0, video_personalizado: 0, historia: 0 } },
+    ];
+
+    function getPIAllVariants() {
+      const variants = [];
+      PI_TIPOS.forEach(t => {
+        if (t.variantes) t.variantes.forEach(v => variants.push({ ...v, tipoId: t.id, tipoColor: t.color, plataformas: t.plataformas, alcanceEst: t.alcanceEst, maxSemana: t.maxSemana }));
+        else variants.push({ id: t.id, nombre: t.nombre, precio: t.precioBase, tipoId: t.id, tipoColor: t.color, plataformas: t.plataformas, alcanceEst: t.alcanceEst, maxSemana: t.maxSemana, badge: null, color: t.color });
+      });
+      return variants;
+    }
+
+    function Stepper({ value, min, max, onChange, color }) {
+      return (
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+          <button onClick={() => onChange(Math.max(min, value - 1))} style={{ width: 26, height: 26, borderRadius: "50%", border: `1px solid ${color}44`, background: "transparent", color, fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: value <= min ? 0.3 : 1 }}>−</button>
+          <span style={{ color, fontWeight: 900, fontSize: 17, fontFamily: "monospace", minWidth: 18, textAlign: "center" }}>{value}</span>
+          <button onClick={() => onChange(Math.min(max, value + 1))} style={{ width: 26, height: 26, borderRadius: "50%", border: `1px solid ${color}44`, background: `${color}22`, color, fontSize: 16, fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: value >= max ? 0.3 : 1 }}>+</button>
+        </div>
+      );
+    }
+
+    function TagPI({ label, color, small }) {
+      return <span style={{ background: `${color}18`, color, border: `1px solid ${color}33`, borderRadius: 4, padding: small ? "1px 6px" : "2px 8px", fontSize: small ? 10 : 11, fontWeight: 600, marginRight: 4, marginBottom: 4, display: "inline-block" }}>{label}</span>;
+    }
+
+    function BarPI({ value, max, color, height = 5 }) {
+      return (
+        <div style={{ background: "#1a1a2e", borderRadius: 4, height, overflow: "hidden" }}>
+          <div style={{ width: `${Math.min((value / (max || 1)) * 100, 100)}%`, background: `linear-gradient(90deg, ${color}77, ${color})`, height: "100%", borderRadius: 4, transition: "width 0.5s ease" }} />
+        </div>
+      );
+    }
+
+    function PlanCEDIntegral() {
+      const allVariants = getPIAllVariants();
+      const [activeCombo, setActiveCombo] = useState("zeus");
+      const [cantidades, setCantidades] = useState({ ...PI_COMBOS[1].cantidades });
+      const [expandedTipo, setExpandedTipo] = useState(null);
+
+      const selectCombo = (combo) => {
+        setActiveCombo(combo.id);
+        if (combo.id !== "custom") setCantidades({ ...combo.cantidades });
+      };
+
+      const handleStepper = (varId, val) => {
+        setActiveCombo("custom");
+        setCantidades(prev => ({ ...prev, [varId]: val }));
+      };
+
+      const combo = PI_COMBOS.find(c => c.id === activeCombo) || PI_COMBOS[2];
+
+      const desglose = useMemo(() => {
+        const rows = [];
+        PI_TIPOS.forEach(tipo => {
+          if (tipo.variantes) {
+            tipo.variantes.forEach(v => {
+              const cant = cantidades[v.id] || 0;
+              if (cant > 0) {
+                const cantMes = cant * 4.3;
+                const subtotalMes = cantMes * v.precio;
+                rows.push({ ...v, tipoNombre: tipo.nombre, emoji: tipo.emoji, tipoColor: tipo.color, plataformas: tipo.plataformas, alcanceEst: tipo.alcanceEst, cant, cantMes, subtotalMes, descuento: 0 });
+              }
+            });
+          } else {
+            const cant = cantidades[tipo.id] || 0;
+            if (cant > 0) {
+              const descNoticia = tipo.tieneDescuentoPropio ? getPIDescuentoNoticias(cant) : 0;
+              const precioConDesc = tipo.precioBase * (1 - descNoticia);
+              const cantMes = cant * 4.3;
+              const subtotalMes = cantMes * precioConDesc;
+              rows.push({ id: tipo.id, nombre: tipo.nombre, precio: precioConDesc, precioOriginal: tipo.precioBase, descuento: descNoticia, badge: descNoticia > 0 ? `-${(descNoticia * 100).toFixed(0)}%` : null, color: tipo.color, tipoNombre: tipo.nombre, emoji: tipo.emoji, tipoColor: tipo.color, plataformas: tipo.plataformas, alcanceEst: tipo.alcanceEst, cant, cantMes, subtotalMes });
+            }
+          }
+        });
+        return rows;
+      }, [cantidades]);
+
+      const totalPiezasSemana = desglose.reduce((s, r) => s + r.cant, 0);
+      const totalPiezasMes = Math.round(desglose.reduce((s, r) => s + r.cantMes, 0));
+      const subtotalMesBruto = desglose.reduce((s, r) => s + r.subtotalMes, 0);
+      const descuentoVolumen = getPIDescuentoVolumen(totalPiezasMes);
+      const ahorroVolumen = subtotalMesBruto * descuentoVolumen;
+      const totalFinal = subtotalMesBruto - ahorroVolumen;
+      const totalAlcanceSemana = desglose.reduce((s, r) => s + r.cant * r.alcanceEst, 0);
+      const tieneNoticias = (cantidades["noticia"] || 0) > 0;
+
+      return (
+        <div style={{ minHeight: "100vh", background: "#06060f", color: "#e5e7eb", fontFamily: "'DM Sans','Segoe UI',sans-serif", padding: "28px 20px" }}>
+          <div style={{ textAlign: "center", marginBottom: 28 }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#ef444415", border: "1px solid #ef444440", borderRadius: 20, padding: "4px 14px", color: "#ef4444", fontSize: 11, fontWeight: 700, letterSpacing: 2, textTransform: "uppercase", marginBottom: 10 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#ef4444", display: "inline-block" }} />
+              CRUZA EL DATO · Planning Integral 2026
+            </div>
+            <h1 style={{ fontSize: 28, fontWeight: 900, margin: "0 0 6px", letterSpacing: -1, color: "#fff" }}>CONSTRUYE TU PAUTA</h1>
+            <p style={{ color: "#4b5563", fontSize: 12, margin: 0 }}>Noticias · Carruseles · Memes · Videos · Historias — con descuentos automáticos por volumen</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10, marginBottom: 24 }}>
+            {PI_COMBOS.map(c => (
+              <div key={c.id} onClick={() => selectCombo(c)} style={{ background: activeCombo === c.id ? `${c.color}12` : "#0d0d1a", border: `2px solid ${activeCombo === c.id ? c.color : "#1a1a2e"}`, borderRadius: 12, padding: "14px 16px", cursor: "pointer", transition: "all 0.2s" }}>
+                <div style={{ color: c.color, fontSize: 10, fontWeight: 700, letterSpacing: 1.5, marginBottom: 3 }}>{c.clave}</div>
+                <div style={{ color: "#e5e7eb", fontWeight: 800, fontSize: 14, marginBottom: 4 }}>{c.nombre}</div>
+                <div style={{ color: "#4b5563", fontSize: 11, lineHeight: 1.4, marginBottom: 8 }}>{c.descripcion}</div>
+                {c.id !== "custom" && (
+                  <div style={{ display: "flex", flexWrap: "wrap" }}>
+                    {Object.entries(c.cantidades).filter(([, v]) => v > 0).map(([k, v]) => {
+                      const vt = allVariants.find(x => x.id === k);
+                      return vt ? <TagPI key={k} label={`${v}× ${vt.nombre.split("·")[0].trim()}`} color={c.color} small /> : null;
+                    })}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+
+          {totalPiezasMes > 0 && (
+            <div style={{ background: descuentoVolumen > 0 ? "#10b98115" : "#1a1a2e", border: `1px solid ${descuentoVolumen > 0 ? "#10b98155" : "#1a1a2e"}`, borderRadius: 10, padding: "10px 16px", marginBottom: 16, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ fontSize: 12, color: "#6b7280" }}>📦 Volumen mensual total: <strong style={{ color: "#e5e7eb" }}>{totalPiezasMes} piezas</strong> · Descuento por volumen:</div>
+              <div style={{ color: descuentoVolumen > 0 ? "#10b981" : "#374151", fontWeight: 800, fontFamily: "monospace", fontSize: 14 }}>
+                {descuentoVolumen > 0 ? `−${(descuentoVolumen * 100).toFixed(0)}%` : "Sin descuento aún"}
+                {descuentoVolumen === 0 && totalPiezasMes < 7 && <span style={{ color: "#374151", fontWeight: 400, fontSize: 10, marginLeft: 8 }}>(7 piezas/mes → 5% off)</span>}
+              </div>
+            </div>
+          )}
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 330px", gap: 16, alignItems: "start" }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+              {PI_TIPOS.map(tipo => {
+                const isExpanded = expandedTipo === tipo.id;
+                const totalCantTipo = tipo.variantes
+                  ? tipo.variantes.reduce((s, v) => s + (cantidades[v.id] || 0), 0)
+                  : (cantidades[tipo.id] || 0);
+                const isActive = totalCantTipo > 0;
+
+                return (
+                  <div key={tipo.id} style={{ background: isActive ? `${tipo.color}09` : "#0d0d1a", border: `1px solid ${isActive ? tipo.color + "44" : "#1a1a2e"}`, borderRadius: 12, overflow: "hidden", transition: "all 0.3s" }}>
+                    <div onClick={() => setExpandedTipo(isExpanded ? null : tipo.id)} style={{ padding: "14px 18px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                        <span style={{ fontSize: 20 }}>{tipo.emoji}</span>
+                        <div>
+                          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                            <span style={{ color: isActive ? tipo.color : "#9ca3af", fontWeight: 800, fontSize: 14 }}>{tipo.nombre}</span>
+                            {tipo.id === "noticia" && <span style={{ background: "#f43f5e22", color: "#f43f5e", border: "1px solid #f43f5e33", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 800 }}>CAPTION + SLIDE 2</span>}
+                            {tipo.tieneDescuentoPropio && <span style={{ background: "#10b98122", color: "#10b981", border: "1px solid #10b98133", borderRadius: 4, padding: "1px 7px", fontSize: 9, fontWeight: 800 }}>DESC. X CANTIDAD</span>}
+                          </div>
+                          <div style={{ color: "#4b5563", fontSize: 11, marginTop: 2 }}>{tipo.descripcion}</div>
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                        {isActive && (
+                          <div style={{ textAlign: "right" }}>
+                            <div style={{ color: tipo.color, fontFamily: "monospace", fontWeight: 900, fontSize: 15 }}>{totalCantTipo}×/sem</div>
+                            <div style={{ color: "#4b5563", fontSize: 10 }}>activos</div>
+                          </div>
+                        )}
+                        <div style={{ color: "#374151", fontSize: 18, transition: "transform 0.2s", transform: isExpanded ? "rotate(180deg)" : "rotate(0deg)" }}>▾</div>
+                      </div>
+                    </div>
+
+                    {isExpanded && (
+                      <div style={{ borderTop: "1px solid #1a1a2e", padding: "14px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
+                        {!tipo.variantes && tipo.id !== "historia" && (
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 16 }}>
+                            <div>
+                              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                <span style={{ color: tipo.color, fontWeight: 700, fontSize: 13 }}>${tipo.precioBase}/pieza</span>
+                                {tipo.tieneDescuentoPropio && (cantidades[tipo.id] || 0) >= 2 && (
+                                  <span style={{ color: "#10b981", fontSize: 11, fontWeight: 700 }}>
+                                    → ${(tipo.precioBase * (1 - getPIDescuentoNoticias(cantidades[tipo.id] || 0))).toFixed(1)} c/u ({(getPIDescuentoNoticias(cantidades[tipo.id] || 0) * 100).toFixed(0)}% off)
+                                  </span>
+                                )}
+                              </div>
+                              {tipo.tieneDescuentoPropio && (
+                                <div style={{ display: "flex", gap: 6 }}>
+                                  {[[2,"5%"],[3,"10%"],[5,"15%"],[7,"20%"]].map(([n, d]) => (
+                                    <span key={n} style={{ background: "#10b98115", color: "#10b981", border: "1px solid #10b98133", borderRadius: 4, padding: "1px 7px", fontSize: 10, fontWeight: 600 }}>{n}+/sem → {d} off</span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <Stepper value={cantidades[tipo.id] || 0} min={0} max={tipo.maxSemana} onChange={v => handleStepper(tipo.id, v)} color={tipo.color} />
+                          </div>
+                        )}
+                        {tipo.id === "historia" && (
+                          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", alignItems: "center", gap: 16 }}>
+                            <div>
+                              <span style={{ color: tipo.color, fontWeight: 700, fontSize: 13 }}>${tipo.precioBase}/historia</span>
+                              <div style={{ color: "#4b5563", fontSize: 11, marginTop: 4 }}>Secuencia 3–5 slides · Stickers interactivos · Arte de marca</div>
+                            </div>
+                            <Stepper value={cantidades[tipo.id] || 0} min={0} max={tipo.maxSemana} onChange={v => handleStepper(tipo.id, v)} color={tipo.color} />
+                          </div>
+                        )}
+                        {tipo.variantes && tipo.variantes.map(v => {
+                          const cant = cantidades[v.id] || 0;
+                          return (
+                            <div key={v.id} style={{ background: cant > 0 ? `${v.color}0f` : "#06060f", border: `1px solid ${cant > 0 ? v.color + "44" : "#1a1a2e"}`, borderRadius: 10, padding: "14px 16px", display: "grid", gridTemplateColumns: "1fr auto", alignItems: "start", gap: 12 }}>
+                              <div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
+                                  <span style={{ color: v.color, fontWeight: 800, fontSize: 13 }}>{v.nombre}</span>
+                                  {v.badge && <span style={{ background: `${v.color}22`, color: v.color, border: `1px solid ${v.color}44`, borderRadius: 20, padding: "1px 8px", fontSize: 10, fontWeight: 700 }}>{v.badge}</span>}
+                                  <span style={{ color: v.color, fontFamily: "monospace", fontWeight: 900, fontSize: 14, marginLeft: "auto" }}>${v.precio}{v.precioVariable ? "+" : ""}</span>
+                                </div>
+                                <div style={{ color: "#6b7280", fontSize: 11, lineHeight: 1.5, marginBottom: 8 }}>{v.desc}</div>
+                                <div>
+                                  {v.estructura.map((e, i) => (
+                                    <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 6, marginBottom: 4 }}>
+                                      <span style={{ color: v.color, fontSize: 10, marginTop: 2 }}>▸</span>
+                                      <span style={{ color: "#4b5563", fontSize: 11 }}>{e}</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                              <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 6, minWidth: 90 }}>
+                                <Stepper value={cant} min={0} max={tipo.maxSemana} onChange={val => handleStepper(v.id, val)} color={v.color} />
+                                <div style={{ color: "#374151", fontSize: 10, textAlign: "right" }}>máx {tipo.maxSemana}/sem</div>
+                                {cant > 0 && (
+                                  <div style={{ background: `${v.color}15`, borderRadius: 6, padding: "6px 10px", textAlign: "center" }}>
+                                    <div style={{ color: v.color, fontFamily: "monospace", fontWeight: 900, fontSize: 13 }}>${(cant * v.precio * 4.3).toFixed(0)}/mes</div>
+                                    <div style={{ color: "#374151", fontSize: 9 }}>subtotal est.</div>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            <div style={{ position: "sticky", top: 76 }}>
+              <div style={{ background: "#0d0d1a", border: `2px solid ${combo.color}55`, borderRadius: 14, padding: 20, marginBottom: 12 }}>
+                <div style={{ color: combo.color, fontWeight: 900, fontSize: 16, marginBottom: 2 }}>{combo.nombre}</div>
+                <div style={{ color: "#4b5563", fontSize: 11, marginBottom: 16 }}>Resumen de inversión</div>
+                {desglose.length === 0 ? (
+                  <div style={{ color: "#374151", fontSize: 13, textAlign: "center", padding: "24px 0" }}>Toca un tipo de contenido y activa +</div>
+                ) : (
+                  <>
+                    {desglose.map(r => (
+                      <div key={r.id} style={{ marginBottom: 10 }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                          <span style={{ color: "#9ca3af", fontSize: 11 }}>{r.emoji} {r.nombre.split("·")[0].trim()} ×{r.cant}/sem</span>
+                          <div style={{ textAlign: "right" }}>
+                            {r.descuento > 0 && <span style={{ color: "#10b981", fontSize: 10, marginRight: 4 }}>−{(r.descuento * 100).toFixed(0)}%</span>}
+                            <span style={{ color: r.color, fontFamily: "monospace", fontWeight: 700, fontSize: 12 }}>${r.subtotalMes.toFixed(0)}/mes</span>
+                          </div>
+                        </div>
+                        <BarPI value={r.subtotalMes} max={subtotalMesBruto * 1.1} color={r.color} />
+                      </div>
+                    ))}
+                    <div style={{ borderTop: "1px solid #1a1a2e", paddingTop: 12, marginTop: 4 }}>
+                      {[
+                        ["Piezas/semana", totalPiezasSemana, combo.color],
+                        ["Piezas/mes est.", `~${totalPiezasMes}`, combo.color],
+                        ["Alcance est./sem", `~${totalAlcanceSemana.toLocaleString()}`, "#10b981"],
+                      ].map(([l, v, c]) => (
+                        <div key={l} style={{ display: "flex", justifyContent: "space-between", marginBottom: 8 }}>
+                          <span style={{ color: "#6b7280", fontSize: 11 }}>{l}</span>
+                          <span style={{ color: c, fontFamily: "monospace", fontWeight: 800, fontSize: 12 }}>{v}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ background: "#06060f", borderRadius: 10, padding: 14, marginTop: 8 }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                        <span style={{ color: "#4b5563", fontSize: 12 }}>Subtotal mensual</span>
+                        <span style={{ color: descuentoVolumen > 0 ? "#4b5563" : "#e5e7eb", fontFamily: "monospace", fontWeight: 700, textDecoration: descuentoVolumen > 0 ? "line-through" : "none" }}>${subtotalMesBruto.toFixed(0)}</span>
+                      </div>
+                      {descuentoVolumen > 0 && (
+                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                          <span style={{ color: "#10b981", fontSize: 12 }}>Descuento volumen ({(descuentoVolumen * 100).toFixed(0)}%)</span>
+                          <span style={{ color: "#10b981", fontFamily: "monospace", fontWeight: 700 }}>−${ahorroVolumen.toFixed(0)}</span>
+                        </div>
+                      )}
+                      <div style={{ borderTop: "1px solid #1a1a2e", paddingTop: 10, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ color: "#e5e7eb", fontSize: 13, fontWeight: 700 }}>Total/mes (sin IVA)</span>
+                        <span style={{ color: combo.color, fontFamily: "monospace", fontWeight: 900, fontSize: 22 }}>${totalFinal.toFixed(0)}</span>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6 }}>
+                        <span style={{ color: "#374151", fontSize: 11 }}>Costo por pieza</span>
+                        <span style={{ color: "#6b7280", fontFamily: "monospace", fontSize: 11 }}>${totalPiezasMes > 0 ? (totalFinal / totalPiezasMes).toFixed(1) : "—"}</span>
+                      </div>
+                    </div>
+                    {tieneNoticias && (
+                      <div style={{ background: "#f43f5e09", border: "1px solid #f43f5e33", borderRadius: 8, padding: "9px 12px", marginTop: 10, fontSize: 11, color: "#9ca3af", lineHeight: 1.5 }}>
+                        <span style={{ color: "#f43f5e", fontWeight: 700 }}>📰 Noticias: </span>
+                        Cada post = caption con tu mención + Slide 2 personalizado con tu arte.
+                      </div>
+                    )}
+                  </>
+                )}
+              </div>
+
+              <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 14, marginBottom: 12 }}>
+                <div style={{ color: "#374151", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Escala de descuentos por volumen</div>
+                {[[7,"5%","#4b5563"],[12,"10%","#6b7280"],[20,"15%","#9ca3af"],[30,"20%","#10b981"]].map(([n, d, c]) => (
+                  <div key={n} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                    <span style={{ color: "#374151", fontSize: 11 }}>+{n} piezas/mes</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <div style={{ width: 60, height: 4, background: "#1a1a2e", borderRadius: 2, overflow: "hidden" }}>
+                        <div style={{ width: totalPiezasMes >= n ? "100%" : "0%", height: "100%", background: c, transition: "width 0.4s" }} />
+                      </div>
+                      <span style={{ color: totalPiezasMes >= n ? "#10b981" : "#374151", fontWeight: 700, fontSize: 11, fontFamily: "monospace" }}>{d}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {desglose.length > 0 && (
+                <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 14 }}>
+                  <div style={{ color: "#374151", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, marginBottom: 10 }}>Proyección trimestral</div>
+                  {[
+                    ["1 mes", `$${totalFinal.toFixed(0)}`, combo.color],
+                    ["3 meses", `$${(totalFinal * 3).toFixed(0)}`, combo.color],
+                    ["Piezas totales (3M)", `~${totalPiezasMes * 3}`, "#9ca3af"],
+                    ["Alcance acum. (3M)", `~${Math.round(totalAlcanceSemana * 4.3 * 3).toLocaleString()}`, "#10b981"],
+                  ].map(([l, v, c]) => (
+                    <div key={l} style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                      <span style={{ color: "#4b5563", fontSize: 11 }}>{l}</span>
+                      <span style={{ color: c, fontFamily: "monospace", fontWeight: 700, fontSize: 12 }}>{v}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {desglose.length > 0 && (
+            <div style={{ background: "#0d0d1a", border: "1px solid #1a1a2e", borderRadius: 12, padding: 20, marginTop: 16 }}>
+              <div style={{ color: "#374151", fontSize: 10, textTransform: "uppercase", letterSpacing: 1, marginBottom: 14 }}>Desglose completo del plan</div>
+              <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+                <thead>
+                  <tr style={{ borderBottom: "1px solid #1a1a2e" }}>
+                    {["Contenido", "×/sem", "×/mes", "Precio unit.", "Desc.", "Subtotal/mes", "Alcance/mes"].map(h => (
+                      <th key={h} style={{ textAlign: h === "Contenido" ? "left" : "center", padding: "8px 10px", color: "#374151", fontWeight: 600, fontSize: 10, textTransform: "uppercase" }}>{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {desglose.map(r => (
+                    <tr key={r.id} style={{ borderBottom: "1px solid #06060f" }}>
+                      <td style={{ padding: "10px 10px" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                          <span>{r.emoji}</span>
+                          <span style={{ color: r.color, fontWeight: 700 }}>{r.nombre}</span>
+                          {r.id === "noticia" && <TagPI label="+Slide 2" color="#f43f5e" small />}
+                          {r.badge && r.id !== "noticia" && <TagPI label={r.badge} color={r.color} small />}
+                        </div>
+                      </td>
+                      <td style={{ textAlign: "center", color: r.color, fontFamily: "monospace", fontWeight: 800 }}>{r.cant}</td>
+                      <td style={{ textAlign: "center", color: "#9ca3af", fontFamily: "monospace" }}>~{Math.round(r.cantMes)}</td>
+                      <td style={{ textAlign: "center", color: "#6b7280", fontFamily: "monospace" }}>
+                        ${r.precioOriginal || r.precio}
+                        {r.descuento > 0 && <div style={{ color: "#10b981", fontSize: 10 }}>→ ${r.precio.toFixed(1)}</div>}
+                      </td>
+                      <td style={{ textAlign: "center", color: r.descuento > 0 ? "#10b981" : "#374151", fontFamily: "monospace", fontWeight: 700 }}>
+                        {r.descuento > 0 ? `−${(r.descuento * 100).toFixed(0)}%` : "—"}
+                      </td>
+                      <td style={{ textAlign: "center", color: r.color, fontFamily: "monospace", fontWeight: 800 }}>${r.subtotalMes.toFixed(0)}</td>
+                      <td style={{ textAlign: "center", color: "#10b981", fontFamily: "monospace" }}>~{Math.round(r.cantMes * r.alcanceEst).toLocaleString()}</td>
+                    </tr>
+                  ))}
+                  <tr style={{ borderTop: `2px solid ${combo.color}44`, background: `${combo.color}08` }}>
+                    <td style={{ padding: "12px 10px", color: "#e5e7eb", fontWeight: 800 }}>TOTAL</td>
+                    <td style={{ textAlign: "center", color: combo.color, fontFamily: "monospace", fontWeight: 900 }}>{totalPiezasSemana}</td>
+                    <td style={{ textAlign: "center", color: combo.color, fontFamily: "monospace", fontWeight: 900 }}>~{totalPiezasMes}</td>
+                    <td colSpan={2} style={{ textAlign: "center" }}>
+                      {descuentoVolumen > 0 && <div style={{ color: "#10b981", fontSize: 11 }}>Vol. −{(descuentoVolumen * 100).toFixed(0)}% = −${ahorroVolumen.toFixed(0)}</div>}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {descuentoVolumen > 0 && <div style={{ color: "#4b5563", fontFamily: "monospace", textDecoration: "line-through", fontSize: 11 }}>${subtotalMesBruto.toFixed(0)}</div>}
+                      <div style={{ color: combo.color, fontFamily: "monospace", fontWeight: 900, fontSize: 16 }}>${totalFinal.toFixed(0)}</div>
+                    </td>
+                    <td style={{ textAlign: "center", color: "#10b981", fontFamily: "monospace", fontWeight: 800 }}>
+                      ~{Math.round(desglose.reduce((s, r) => s + r.cantMes * r.alcanceEst, 0)).toLocaleString()}
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          )}
+          <div style={{ textAlign: "center", marginTop: 20, color: "#1f2937", fontSize: 10 }}>
+            Precios sin IVA · Descuentos por volumen aplicados automáticamente · Noticias con desc. propio por cantidad semanal
+          </div>
+        </div>
+      );
+    }
+
+
+    /* ══════════════════════════════════════════════════════════
+       MAIN APP · Navigation wrapper
+    ══════════════════════════════════════════════════════════ */
+
+    const TABS = [
+      { id: "noticias",  label: "📰 Plan Noticias",     component: PlanCED         },
+      { id: "matriz",    label: "🛒 Matriz Individual",  component: MatrizIndividual },
+      { id: "integral",  label: "⚡ Plan Integral",      component: PlanCEDIntegral  },
+    ];
+
+    function App() {
+      const [activeTab, setActiveTab] = useState("noticias");
+      const ActiveComponent = TABS.find(t => t.id === activeTab).component;
+
+      return (
+        <div>
+          <nav className="ced-nav">
+            <div className="ced-nav-logo">⚡ CED · 2026</div>
+            <div className="ced-nav-tabs">
+              {TABS.map(t => (
+                <button
+                  key={t.id}
+                  className={`ced-nav-tab${activeTab === t.id ? " active" : ""}`}
+                  onClick={() => setActiveTab(t.id)}
+                >
+                  {t.label}
+                </button>
+              ))}
+            </div>
+          </nav>
+          <ActiveComponent />
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById("root"));
+    root.render(<App />);
+  </script>
+</body>
+</html>
